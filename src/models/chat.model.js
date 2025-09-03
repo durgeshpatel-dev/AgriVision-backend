@@ -22,10 +22,20 @@ const chatSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    unique: true,
+    index: true
+  },
+  sessionId: {
+    type: String,
+    default: () => new mongoose.Types.ObjectId().toString(),
+    index: true
   },
   messages: [messageSchema],
 }, { timestamps: true });
 
+// Add indexes for better performance
+chatSchema.index({ userId: 1, createdAt: -1 });
+chatSchema.index({ sessionId: 1, createdAt: -1 });
+
 const Chat = mongoose.model('Chat', chatSchema);
+module.exports = Chat;
 module.exports = Chat;
