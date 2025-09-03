@@ -1,0 +1,196 @@
+{
+  "soilProperties": {
+    "Sandy": {
+      "composition": {
+        "sand": 85,
+        "clay": 8,
+        "silt": 7
+      },
+      "properties": {
+        "pH": 6.2,
+        "nitrogen": 12,
+        "organicCarbon": 8,
+        "cationExchangeCapacity": 8,
+        "fertility": "Low"
+      },
+      "analysis": {
+        "drainage": "Excellent",
+        "waterHolding": "Low",
+        "nutrientRetention": "Low"
+      },
+      "recommendations": [
+        "Add organic matter to improve water retention",
+        "Apply frequent, light fertilizer applications",
+        "Use mulching to reduce water loss",
+        "Consider drip irrigation for water efficiency"
+      ],
+      "crops": {
+        "suitable": ["Groundnut", "Millets", "Cotton", "Sugarcane"],
+        "moderate": ["Rice", "Wheat"],
+        "unsuitable": []
+      }
+    },
+    "Loamy": {
+      "composition": {
+        "sand": 40,
+        "clay": 20,
+        "silt": 40
+      },
+      "properties": {
+        "pH": 6.8,
+        "nitrogen": 18,
+        "organicCarbon": 22,
+        "cationExchangeCapacity": 18,
+        "fertility": "Medium"
+      },
+      "analysis": {
+        "drainage": "Good",
+        "waterHolding": "Medium",
+        "nutrientRetention": "Good"
+      },
+      "recommendations": [
+        "Ideal soil for most crops",
+        "Maintain current soil management practices",
+        "Regular organic matter addition",
+        "Balanced fertilization program"
+      ],
+      "crops": {
+        "suitable": ["Rice", "Wheat", "Maize", "Sugarcane", "Cotton"],
+        "moderate": [],
+        "unsuitable": []
+      }
+    },
+    "Black": {
+      "composition": {
+        "sand": 25,
+        "clay": 50,
+        "silt": 25
+      },
+      "properties": {
+        "pH": 7.5,
+        "nitrogen": 25,
+        "organicCarbon": 35,
+        "cationExchangeCapacity": 45,
+        "fertility": "High"
+      },
+      "analysis": {
+        "drainage": "Poor",
+        "waterHolding": "Very High",
+        "nutrientRetention": "Excellent"
+      },
+      "recommendations": [
+        "Excellent for cotton and sugarcane",
+        "Improve drainage with ridges and furrows",
+        "Avoid working soil when wet",
+        "Deep tillage during dry season"
+      ],
+      "crops": {
+        "suitable": ["Cotton", "Sugarcane", "Soybean", "Wheat"],
+        "moderate": ["Rice", "Maize"],
+        "unsuitable": []
+      }
+    },
+    "Red": {
+      "composition": {
+        "sand": 60,
+        "clay": 25,
+        "silt": 15
+      },
+      "properties": {
+        "pH": 5.8,
+        "nitrogen": 15,
+        "organicCarbon": 18,
+        "cationExchangeCapacity": 12,
+        "fertility": "Medium"
+      },
+      "analysis": {
+        "drainage": "Good",
+        "waterHolding": "Medium",
+        "nutrientRetention": "Medium"
+      },
+      "recommendations": [
+        "Add lime to correct acidity",
+        "Increase organic matter content",
+        "Use phosphorus-rich fertilizers",
+        "Implement soil conservation practices"
+      ],
+      "crops": {
+        "suitable": ["Rice", "Millets", "Groundnut", "Cotton"],
+        "moderate": ["Wheat", "Maize"],
+        "unsuitable": []
+      }
+    },
+    "Red-Yellow": {
+      "composition": {
+        "sand": 55,
+        "clay": 30,
+        "silt": 15
+      },
+      "properties": {
+        "pH": 6.0,
+        "nitrogen": 16,
+        "organicCarbon": 20,
+        "cationExchangeCapacity": 15,
+        "fertility": "Medium"
+      },
+      "analysis": {
+        "drainage": "Good",
+        "waterHolding": "Medium",
+        "nutrientRetention": "Medium"
+      },
+      "recommendations": [
+        "Monitor soil pH regularly",
+        "Apply balanced NPK fertilizers",
+        "Use green manuring",
+        "Terracing on slopes to prevent erosion"
+      ],
+      "crops": {
+        "suitable": ["Rice", "Maize", "Tea", "Coffee"],
+        "moderate": ["Wheat", "Cotton"],
+        "unsuitable": []
+      }
+    },
+    "Alluvial": {
+      "composition": {
+        "sand": 35,
+        "clay": 25,
+        "silt": 40
+      },
+      "properties": {
+        "pH": 7.2,
+        "nitrogen": 22,
+        "organicCarbon": 28,
+        "cationExchangeCapacity": 25,
+        "fertility": "High"
+      },
+      "analysis": {
+        "drainage": "Good",
+        "waterHolding": "High",
+        "nutrientRetention": "Excellent"
+      },
+      "recommendations": [
+        "Highly fertile soil for intensive agriculture",
+        "Suitable for multiple cropping",
+        "Regular organic matter addition",
+        "Efficient water management"
+      ],
+      "crops": {
+        "suitable": ["Rice", "Wheat", "Sugarcane", "Maize", "Cotton"],
+        "moderate": [],
+        "unsuitable": []
+      }
+    }
+  },
+  "districtAlternatives": {
+    "ahmedabad": ["Gandhinagar", "Kheda", "Anand"],
+    "mumbai": ["Thane", "Raigad"],
+    "delhi": ["Gurgaon", "Faridabad"],
+    "bangalore": ["Mysore", "Tumkur"],
+    "hyderabad": ["Medak", "Rangareddy"],
+    "chennai": ["Kanchipuram", "Tiruvallur"],
+    "kolkata": ["24 Parganas", "Hooghly"],
+    "pune": ["Satara", "Solapur"],
+    "jaipur": ["Alwar", "Sikar"],
+    "lucknow": ["Hardoi", "Sitapur"]
+  }
+}
