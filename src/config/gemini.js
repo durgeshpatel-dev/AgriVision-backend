@@ -1,73 +1,129 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const util = require('util');
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Get Gemini model
-const getGeminiModel = (modelName = 'gemini-1.5-flash') => {
-  return genAI.getGenerativeModel({ model: modelName });
+// Preferred model fallbacks (initial suggestions). We'll validate against ListModels at runtime.
+const PREFERRED_MODELS = [
+  'gemini-1.5-flash',
+  'gemini-1.5-turbo',
+  'gemini-1.5',
+];
+
+// Helper: sleep ms
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Get supported models from the API and filter those that support generateContent
+const listSupportedModels = async () => {
+  try {
+    const list = await genAI.listModels();
+    // list.models is expected; defensively handle shapes
+    const models = (list && list.models) || [];
+    // Each model may contain supportedMethods or metadata to check. We'll accept any model whose name exists.
+    return models.map((m) => m.name || m.model || m.id).filter(Boolean);
+  } catch (err) {
+    console.warn('Failed to list Gemini models:', err?.message || err);
+    return [];
+  }
 };
 
-// Generate content with Gemini
+// Find the best model to use: prefer options.model, then PREFERRED_MODELS that are available, then first available from API
+const selectModel = async (preferred) => {
+  const apiModels = await listSupportedModels();
+  if (preferred && apiModels.includes(preferred)) return preferred;
+
+  for (const m of PREFERRED_MODELS) {
+    if (apiModels.includes(m)) return m;
+  }
+
+  // Fallback to first model returned by API
+  if (apiModels.length > 0) return apiModels[0];
+
+  // Last resort: return the preferred or the first of PREFERRED_MODELS
+  return preferred || PREFERRED_MODELS[0];
+};
+
+// Core generation with retries and model fallback
 const generateContent = async (prompt, options = {}) => {
-  try {
-    const model = getGeminiModel(options.model);
-    
-    const generationConfig = {
-      temperature: options.temperature || 0.7,
-      topK: options.topK || 40,
-      topP: options.topP || 0.95,
-      maxOutputTokens: options.maxOutputTokens || 1024,
-    };
+  const maxAttempts = options.maxAttempts || 3;
+  let attempt = 0;
+  let lastErr = null;
+  // If user passed a model, try it first, otherwise we'll select one dynamically
+  let modelToTry = options.model;
 
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig,
-    });
-
-    const response = await result.response;
-    const text = response.text();
-    
-    return {
-      text,
-      usage: {
-        promptTokens: response.usageMetadata?.promptTokenCount || 0,
-        completionTokens: response.usageMetadata?.candidatesTokenCount || 0,
-        totalTokens: response.usageMetadata?.totalTokenCount || 0
+  while (attempt < maxAttempts) {
+    attempt += 1;
+    try {
+      // On first attempt, pick modelToTry (if provided) or select dynamically
+      if (!modelToTry) {
+        modelToTry = await selectModel(options.model);
       }
-    };
-  } catch (error) {
-    console.error('Gemini API Error:', error);
-    throw error;
+
+      const model = await genAI.getGenerativeModel({ model: modelToTry });
+
+      const generationConfig = {
+        temperature: options.temperature || 0.7,
+        topK: options.topK || 40,
+        topP: options.topP || 0.95,
+        maxOutputTokens: options.maxOutputTokens || 1024,
+      };
+
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig,
+      });
+
+      const response = await result.response;
+      const text = response.text();
+
+      return {
+        text,
+        model: modelToTry,
+        usage: {
+          promptTokens: response.usageMetadata?.promptTokenCount || 0,
+          completionTokens: response.usageMetadata?.candidatesTokenCount || 0,
+          totalTokens: response.usageMetadata?.totalTokenCount || 0,
+        },
+      };
+    } catch (error) {
+      lastErr = error;
+      const msg = (error && error.message) || String(error);
+      console.warn(`Gemini attempt ${attempt} failed for model=${modelToTry}:`, msg);
+
+      // If error suggests model not supported or 404 for that model, clear modelToTry so we select another on next loop
+      if (/not found|is not found|not supported|404/i.test(msg)) {
+        modelToTry = null; // force re-selection from API
+      }
+
+      // If 503 or transient, exponential backoff and retry
+      if (/503|unavailable|timed out|timeout|rate limit/i.test(msg) && attempt < maxAttempts) {
+        const backoff = Math.pow(2, attempt) * 500;
+        await sleep(backoff);
+        continue;
+      }
+
+      // For other errors, try to select another model once, otherwise break
+      if (attempt < maxAttempts) {
+        modelToTry = null; // try selecting another model
+        const backoff = Math.pow(2, attempt) * 300;
+        await sleep(backoff);
+        continue;
+      }
+
+      // Exhausted attempts
+      break;
+    }
   }
-};
 
-// Generate content with streaming
-const generateContentStream = async (prompt, options = {}) => {
-  try {
-    const model = getGeminiModel(options.model);
-    
-    const generationConfig = {
-      temperature: options.temperature || 0.7,
-      topK: options.topK || 40,
-      topP: options.topP || 0.95,
-      maxOutputTokens: options.maxOutputTokens || 1024,
-    };
-
-    const result = await model.generateContentStream({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig,
-    });
-
-    return result.stream;
-  } catch (error) {
-    console.error('Gemini Stream API Error:', error);
-    throw error;
-  }
+  // If we reach here, all attempts failed
+  const err = lastErr || new Error('Unknown Gemini error');
+  console.error('generateContent: all attempts failed:', util.inspect(err, { depth: 2 }));
+  throw err;
 };
 
 module.exports = {
-  getGeminiModel,
   generateContent,
-  generateContentStream
+  PREFERRED_MODELS,
+  listSupportedModels,
 };

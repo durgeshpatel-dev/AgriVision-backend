@@ -121,6 +121,7 @@ const askQuestion = async (req, res) => {
   
   try {
     const { question, language = 'en', sessionId } = req.body;
+    console.log('Received question:', question);
     const userId = req.user._id;
 
     if (!question || question.trim().length === 0) {
