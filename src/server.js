@@ -12,6 +12,7 @@ const predictionRoutes = require('./routes/prediction.routes');
 // const communityRoutes = require('./routes/community.routes');
 const chatRoutes = require('./routes/chat.routes');
 const chatbotRoutes = require('./routes/chatbot.routes'); // AI Chatbot routes
+const diseaseRoutes = require('./routes/disease.routes'); // Disease prediction routes
 const userRoutes = require('./routes/user.routes');
 
 const app = express();
@@ -95,6 +96,7 @@ app.use('/api/user', userRoutes);
 // app.use('/api/community', communityRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/chatbot', chatbotRoutes); // AI Chatbot endpoints
+app.use('/api/disease', diseaseRoutes); // Disease prediction endpoints
 
 // Weather endpoint based on location
 app.post('/api/location/weather', async (req, res) => {

@@ -17,7 +17,29 @@ const getLatestPrediction = async (userId) => {
   }
 };
 
-// Build personalized context for the user
+// Simple language detection function
+const detectLanguage = (text) => {
+  if (!text) return 'en';
+
+  // Check for Devanagari script (Hindi, Marathi, etc.)
+  const devanagariRegex = /[\u0900-\u097F]/;
+  if (devanagariRegex.test(text)) {
+    // Further distinguish between Hindi, Marathi, etc. based on common words
+    if (/\b(क्या|है|हैं|करें|कैसे|कब|कहाँ|क्यों|कौन|कितना|कितने|कितनी)\b/i.test(text)) return 'hi';
+    if (/\b(काय|आहे|आहोत|करा|कसे|कधी|कुठे|का|कोण|किती)\b/i.test(text)) return 'mr';
+    if (/\b(શું|છે|છીએ|કરો|કેવી|ક્યારે|ક્યાં|કેમ|કોણ|કેટલું|કેટલા|કેટલી)\b/i.test(text)) return 'gu';
+    if (/\b(ఏమి|ఉంది|ఉన్నారు|చేయండి|ఎలా|ఎప్పుడు|ఎక్కడ|ఎందుకు|ఎవరు|ఎంత|ఎంతమంది)\b/i.test(text)) return 'te';
+    if (/\b(என்ன|இருக்கிறது|இருக்கிறோம்|செய்யுங்கள்|எப்படி|எப்போது|எங்கே|ஏன்|யார்|எவ்வளவு)\b/i.test(text)) return 'ta';
+    if (/\b(ಏನು|ಇದೆ|ಇದ್ದೇವೆ|ಮಾಡಿ|ಹೇಗೆ|ಯಾವಾಗ|ಎಲ್ಲಿ|ಏಕೆ|ಯಾರು|ಎಷ್ಟು)\b/i.test(text)) return 'kn';
+    if (/\b(എന്ത്|ഉണ്ട്|ഉണ്ട്|ചെയ്യുക|എങ്ങനെ|എപ്പോൾ|എവിടെ|എന്തുകൊണ്ട്|ആരാണ്|എത്ര)\b/i.test(text)) return 'ml';
+    if (/\b(কি|আছে|আছি|করুন|কীভাবে|কখন|কোথায়|কেন|কে|কত|কতজন)\b/i.test(text)) return 'bn';
+    if (/\b(ਕੀ|ਹੈ|ਹਾਂ|ਕਰੋ|ਕਿਵੇਂ|ਕਦੋਂ|ਕਿੱਥੇ|ਕਿਉਂ|ਕੌਣ|ਕਿੰਨਾ|ਕਿੰਨੇ|ਕਿੰਨੀ)\b/i.test(text)) return 'pa';
+    return 'hi'; // Default to Hindi if Devanagari but no specific match
+  }
+
+  // Check for other scripts or default to English
+  return 'en';
+};
 const buildPersonalizedContext = async (user, language = 'en') => {
   try {
     const latestPrediction = await getLatestPrediction(user._id);
@@ -131,6 +153,13 @@ const askQuestion = async (req, res) => {
       });
     }
 
+    // Detect language from the question
+    const detectedLanguage = detectLanguage(question);
+    console.log('Detected language:', detectedLanguage);
+    
+    // Use detected language if no explicit language is provided
+    const responseLanguage = language !== 'en' ? language : detectedLanguage;
+
     // Get user data
     const user = await User.findById(userId);
     if (!user) {
@@ -141,7 +170,7 @@ const askQuestion = async (req, res) => {
     }
 
     // Build personalized context
-    const context = await buildPersonalizedContext(user, language);
+    const context = await buildPersonalizedContext(user, responseLanguage);
     
     // Get recent chat history for context
     const userChat = await Chat.findOne({ userId });
@@ -155,7 +184,7 @@ const askQuestion = async (req, res) => {
     }
 
     // Build the complete prompt
-    const systemPrompt = buildSystemPrompt(context, language);
+    const systemPrompt = buildSystemPrompt(context, responseLanguage);
     const fullPrompt = `${systemPrompt}
 
 RECENT CONVERSATION:
@@ -204,7 +233,8 @@ RESPONSE:`;
       success: true,
       data: {
         response: geminiResponse.text,
-        language: language,
+        language: responseLanguage,
+        detectedLanguage: detectedLanguage,
         contextUsed: {
           userProfile: context.hasProfile,
           prediction: context.hasPrediction,
