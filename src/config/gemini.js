@@ -4,7 +4,7 @@ const util = require('util');
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Preferred model fallbacks (initial suggestions). We'll validate against ListModels at runtime.
+// Preferred model fallbacks (initial suggestions). We'll use these predefined models.
 const PREFERRED_MODELS = [
   'gemini-1.5-flash',
   'gemini-1.5-turbo',
@@ -17,11 +17,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Get supported models from the API and filter those that support generateContent
 const listSupportedModels = async () => {
   try {
-    const list = await genAI.listModels();
-    // list.models is expected; defensively handle shapes
-    const models = (list && list.models) || [];
-    // Each model may contain supportedMethods or metadata to check. We'll accept any model whose name exists.
-    return models.map((m) => m.name || m.model || m.id).filter(Boolean);
+    // Since the Google Generative AI library doesn't have listModels method,
+    // return the predefined preferred models
+    return PREFERRED_MODELS;
   } catch (err) {
     console.warn('Failed to list Gemini models:', err?.message || err);
     return [];

@@ -244,6 +244,19 @@ RESPONSE:`;
           responseTime,
           tokens: geminiResponse.usage,
           sessionId: sessionId || 'default'
+        },
+        logs: {
+          processingSteps: [
+            'language_detection',
+            'context_building',
+            'prompt_construction',
+            'ai_generation',
+            'response_formatting'
+          ],
+          modelUsed: 'gemini-1.5-flash',
+          conversationLength: userChat ? userChat.messages.length : 0,
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         }
       }
     });

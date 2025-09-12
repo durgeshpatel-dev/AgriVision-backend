@@ -1,31 +1,12 @@
+// Load environment variables
+dotenv.config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const passport = require('passport');
 const rateLimit = require('express-rate-limit');
-
-<<<<<<< Updated upstream
-const authRoutes = require('./routes/auth.routes');
-const oauthRoutes = require('./routes/oauth.routes'); // OAuth routes
-const predictionRoutes = require('./routes/prediction.routes');
-// const communityRoutes = require('./routes/community.routes');
-const chatRoutes = require('./routes/chat.routes');
-const chatbotRoutes = require('./routes/chatbot.routes'); // AI Chatbot routes
-const diseaseRoutes = require('./routes/disease.routes'); // Disease prediction routes
-const userRoutes = require('./routes/user.routes');
-=======
-// Load environment variables
-dotenv.config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const passport = require('passport');
-const rateLimit = require('express-rate-limit');
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 

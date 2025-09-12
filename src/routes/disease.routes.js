@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { predictDisease, checkFlaskHealth, testUpload } = require('../controllers/disease.controller');
+const { predictDisease, checkFlaskHealth, testUpload, getRecentDiseasePredictions, getUserDiseasePredictions, getDiseasePredictionById } = require('../controllers/disease.controller');
 const { protect, requireVerified } = require('../middlewares/auth.middleware');
 
 // Create uploads directory if it doesn't exist
@@ -61,6 +61,22 @@ router.post('/test', protect, requireVerified, upload.single('image'), testUploa
 // @desc    Check Flask API health status
 // @access  Private (Verified users only)
 router.get('/health', protect, requireVerified, checkFlaskHealth);
+
+// Disease history routes (mounted on /api/diseases)
+// @route   GET /api/diseases/recent/:userId
+// @desc    Get recent disease predictions for a user
+// @access  Private
+router.get('/recent/:userId', protect, getRecentDiseasePredictions);
+
+// @route   GET /api/diseases/prediction/:predictionId  
+// @desc    Get disease prediction by ID
+// @access  Private
+router.get('/prediction/:predictionId', protect, getDiseasePredictionById);
+
+// @route   GET /api/diseases/:userId
+// @desc    Get all disease predictions for a user (this should be last to avoid conflicts)
+// @access  Private
+router.get('/:userId', protect, getUserDiseasePredictions);
 
 // Error handling middleware for multer errors
 router.use((error, req, res, next) => {
