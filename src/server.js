@@ -9,6 +9,17 @@ const axios = require('axios');
 // Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnvVars = ['MONGODB_URI'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars);
+  console.error('Please set these environment variables in Railway dashboard or .env file');
+} else {
+  console.log('✅ All required environment variables are set');
+}
+
 const app = express();
 
 // Import routes

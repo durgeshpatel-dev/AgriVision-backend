@@ -1,0 +1,14 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[variables]
+NODE_ENV = "production"
+JWT_SECRET = "agrivision-railway-super-secret-jwt-key-2024"
+JWT_EXPIRE = "7d"
+FRONTEND_URL = "https://agrivision-frontend.netlify.app"
+MONGODB_URI = "mongodb+srv://agrivision:AgriVision2024@cluster0.mongodb.net/agrivision?retryWrites=true&w=majority"
