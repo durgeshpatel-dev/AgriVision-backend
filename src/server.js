@@ -9,14 +9,16 @@ const axios = require('axios');
 // Load environment variables
 dotenv.config();
 
-// Check environment variables (optional)
-console.log('🔧 Environment Configuration:');
-console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-console.log(`   PORT: ${process.env.PORT || '5001'}`);
-console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Set' : '⚠️  Not set (JWT disabled)'}`);
-console.log(`   MONGODB_URI: ${process.env.MONGODB_URI ? '✅ Set' : '⚠️  Not set (Database disabled)'}`);
-console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'Not set'}`);
-console.log('');
+// Validate required environment variables
+const requiredEnvVars = ['MONGODB_URI'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars);
+  console.error('Please set these environment variables in Railway dashboard or .env file');
+} else {
+  console.log('✅ All required environment variables are set');
+}
 
 const app = express();
 
@@ -92,42 +94,11 @@ console.log('Passport OAuth initialized');
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  const dbStatus = mongoose.connection.readyState;
-  const dbStates = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting'
-  };
-  
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    database: {
-      status: dbStates[dbStatus] || 'unknown',
-      required: false
-    },
-    services: {
-      api: 'active',
-      auth: process.env.JWT_SECRET ? 'active' : 'disabled',
-      database: dbStatus === 1 ? 'active' : 'disabled'
-    }
-  });
-});
-
-// Simple test endpoint (no database required)
-app.get('/api/test', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'AgriVision Backend API is working!',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      test: '/api/test'
-    }
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -690,7 +661,7 @@ const startServer = async () => {
       console.log(`💾 Database: ${dbConnected ? 'Connected' : 'Disabled'}`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
