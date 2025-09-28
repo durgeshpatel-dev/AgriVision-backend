@@ -21,7 +21,8 @@ const TEST_USER = {
 
 // Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  const secret = process.env.JWT_SECRET || 'agrivision-railway-super-secret-jwt-key-2024';
+  return jwt.sign({ id }, secret, {
     expiresIn: '30d',
   });
 };

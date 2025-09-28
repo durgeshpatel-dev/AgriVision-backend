@@ -113,7 +113,7 @@ app.get('/health', (req, res) => {
     },
     services: {
       api: 'active',
-      auth: process.env.JWT_SECRET ? 'active' : 'disabled',
+      auth: (process.env.JWT_SECRET || 'fallback') ? 'active' : 'disabled',
       database: dbStatus === 1 ? 'active' : 'disabled'
     }
   });

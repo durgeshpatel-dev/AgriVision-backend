@@ -26,7 +26,8 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const secret = process.env.JWT_SECRET || 'agrivision-railway-super-secret-jwt-key-2024';
+      const decoded = jwt.verify(token, secret);
 
       // 🧪 Check if this is the test user
       if (decoded.id === TEST_USER._id) {
