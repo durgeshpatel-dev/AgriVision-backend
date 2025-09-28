@@ -75,11 +75,12 @@ const corsOptions = {
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5174',
+    'https://agrivision-frontend.netlify.app',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Access-Control-Allow-Origin']
 };
 
 // Apply middleware
@@ -115,6 +116,25 @@ app.get('/health', (req, res) => {
       api: 'active',
       auth: (process.env.JWT_SECRET || 'fallback') ? 'active' : 'disabled',
       database: dbStatus === 1 ? 'active' : 'disabled'
+    }
+  });
+});
+
+// Test endpoint for frontend connectivity
+app.get('/api/test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'AgriVision Backend API is working!',
+    timestamp: new Date().toISOString(),
+    cors: req.headers.origin,
+    endpoints: {
+      health: '/health',
+      test: '/api/test',
+      login: '/api/auth/login'
+    },
+    testCredentials: {
+      email: 'demo@agrivision.com',
+      password: 'demo123'
     }
   });
 });
