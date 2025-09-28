@@ -2,6 +2,21 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 
+// 🧪 TEST USER FOR DEMO (same as in auth.controller.js)
+const TEST_USER = {
+  _id: 'test-user-123',
+  name: 'Demo User',
+  email: 'demo@agrivision.com',
+  password: 'demo123',
+  isVerified: true,
+  farmDetails: {
+    farmName: 'Demo Farm',
+    location: 'Demo Location',
+    farmSize: '10 acres',
+    soilType: 'Loamy'
+  }
+};
+
 const protect = async (req, res, next) => {
   let token;
 
@@ -13,11 +28,21 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get user from the token
-      req.user = await User.findById(decoded.id).select('-passwordHash');
+      // 🧪 Check if this is the test user
+      if (decoded.id === TEST_USER._id) {
+        req.user = TEST_USER;
+        return next();
+      }
 
-      if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
+      // Get user from the database (will work when MongoDB is connected)
+      try {
+        req.user = await User.findById(decoded.id).select('-passwordHash');
+        if (!req.user) {
+          return res.status(401).json({ message: 'Not authorized, user not found' });
+        }
+      } catch (dbError) {
+        console.log('🧪 Database not available, user not found');
+        return res.status(401).json({ message: 'Not authorized, database unavailable' });
       }
 
       next();

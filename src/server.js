@@ -94,11 +94,28 @@ console.log('Passport OAuth initialized');
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState;
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: {
+      status: dbStates[dbStatus] || 'unknown',
+      required: false
+    },
+    services: {
+      api: 'active',
+      auth: process.env.JWT_SECRET ? 'active' : 'disabled',
+      database: dbStatus === 1 ? 'active' : 'disabled'
+    }
   });
 });
 

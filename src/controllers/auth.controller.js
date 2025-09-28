@@ -4,6 +4,21 @@ const crypto = require('crypto');
 const User = require('../models/user.model');
 const { sendOTPEmail, sendPasswordResetEmail } = require('../utils/emailService');
 
+// 🧪 TEST USER FOR DEMO (Remove when MongoDB is properly set up)
+const TEST_USER = {
+  _id: 'test-user-123',
+  name: 'Demo User',
+  email: 'demo@agrivision.com',
+  password: 'demo123',
+  isVerified: true,
+  farmDetails: {
+    farmName: 'Demo Farm',
+    location: 'Demo Location',
+    farmSize: '10 acres',
+    soilType: 'Loamy'
+  }
+};
+
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -27,9 +42,28 @@ const signup = async (req, res) => {
   }
 
   try {
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+    // 🧪 TEST USER HANDLING - Check if trying to register the test user
+    if (email === TEST_USER.email) {
+      return res.status(400).json({ message: 'Demo user already exists. Use demo@agrivision.com with password: demo123' });
+    }
+
+    // For any other email, check database (will work when MongoDB is connected)
+    try {
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        return res.status(400).json({ message: 'User already exists' });
+      }
+    } catch (dbError) {
+      console.log('🧪 Database not available, using test mode for signup');
+      // If database not available, allow signup but return test user instructions
+      return res.status(200).json({ 
+        message: 'Database temporarily unavailable. Use demo user for testing',
+        testUser: {
+          email: TEST_USER.email,
+          password: 'demo123',
+          instructions: 'Use the demo credentials to test authentication'
+        }
+      });
     }
 
     // Generate OTP
@@ -80,7 +114,29 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    // 🧪 TEST USER AUTHENTICATION
+    if (email === TEST_USER.email && password === TEST_USER.password) {
+      console.log('🧪 Test user login successful');
+      return res.json({
+        _id: TEST_USER._id,
+        name: TEST_USER.name,
+        email: TEST_USER.email,
+        isVerified: TEST_USER.isVerified,
+        farmDetails: TEST_USER.farmDetails,
+        token: generateToken(TEST_USER._id),
+      });
+    }
+
+    // Try database authentication (will work when MongoDB is connected)
+    let user = null;
+    try {
+      user = await User.findOne({ email });
+    } catch (dbError) {
+      console.log('🧪 Database not available, checking test user only');
+      return res.status(401).json({ 
+        message: 'Invalid email or password. Try demo user: demo@agrivision.com / demo123' 
+      });
+    }
 
     if (user && (await user.comparePassword(password))) {
       // Check if user is verified
