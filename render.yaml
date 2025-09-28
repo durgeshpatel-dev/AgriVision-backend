@@ -5,16 +5,9 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-      # Add your environment variables in Render dashboard:
-      # - MONGODB_URI
-      # - JWT_SECRET
-      # - GOOGLE_CLIENT_ID
-      # - GOOGLE_CLIENT_SECRET
-      # - GEMINI_API_KEY
-      # - EMAIL_USER
-      # - EMAIL_PASS
