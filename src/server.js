@@ -93,6 +93,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport.initialize());
 console.log('Passport OAuth initialized');
 
+// Serve static files from React build (for unified deployment)
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../build')));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState;
@@ -633,10 +637,7 @@ app.post('/api/location/weather', async (req, res) => {
   }
 });
 
-// Root welcome route
-app.get('/', (req, res) => res.json({ message: 'Welcome to the Crop Yield Prediction Platform API' }));
-
-// API Routes
+// API Routes (defined before catch-all route)
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', oauthRoutes);
 app.use('/api/market', marketRoutes);
@@ -657,9 +658,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
+// Serve React app for all non-API routes (catch-all)
+app.get('*', (req, res) => {
+  // Don't serve React app for API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: `API route ${req.originalUrl} not found` });
+  }
+  
+  // Serve React app
+  res.sendFile(path.join(__dirname, '../build/index.html'));
 });
 
 // Database connection helper (optional)
